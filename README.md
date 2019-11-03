@@ -4,7 +4,8 @@
 3. [Installation](#installation)
     1. [Optional](#installation-optional)
     2. [Mandatory](#installation-mandatory)
-4. [Note](#note)
+4. [Usage](#usage)
+5. [Note](#note)
 
 
 
@@ -28,49 +29,92 @@ Create virtual environment named VideoConveter:
 ```bash
 virtualenv VideoConverter
 ```
-or
+or:
 ```bash
 virtualenv -p python3 VideoConverter
 ```
 
-Activate virtual environment
+Activate virtual environment:
 ```bash
 source VideoConverter/bin/activate
 ```
 
-Deactivate virtual environment
+Deactivate virtual environment:
 ```bash
 deactivate
 ```
 
 ### 3.2 Mandatory <a name="installation-mandatory"></a>
-Install required pip-tools for requirements installation
+Install required pip-tools for requirements installation:
 ```bash
 alias py='python -m pip'
 py install pip-tools
 ```
 
-Move to root project directory
+Move to root project directory:
 ```bash
 cd /project_root/
 ```
 
-Read requirements to install
+Read requirements to install:
 ```bash
 pip-compile --output-file requirements.txt requirements.in
 ```
 
-Install requierd packages
+Install requierd packages:
 ```bash
 pip-sync
 ```
 
-Start main
+## 4. Usage <a name="usage"></a>
+Start main:
 ```bash
 python src/Main.py
 ```
 
-## 4. Note <a name="note"></a>
+You could specify a configuration file:
+```bash
+python src/Main.py /tmp/config
+```
+
+Configurations file examaple:
+```ini
+[general]
+# Directory per i files temporanei
+tmp = /tmp
+# Numero di processi che si occuperanno della conversione dei files
+processes = 5
+
+[media]
+# Directory dove cercare i files da convertire
+in.folder = /tmp
+# Directory dove spostare i files originali dopo la conversione
+in.converted.folder = /tmp/VideoConverter/converted
+# Directory dove salvare i files convertiti
+out.folder = /tmp/VideoConverter/out
+# Formato dei files convertiti
+out.format = {
+            'format': 'avi',
+            'audio': {
+                'codec': 'mp3',
+                'samplerate': 11025,
+                'channels': 2
+            },
+            'video': {
+                'codec': 'h264',
+                'width': 720,
+                # 'height': 400,
+                # 'fps': 15
+            }
+        }
+# Frequenza (sec) per il controllo di nuovi media
+obs-timeout = 0.5
+# Path per i binari richiesti
+ffmpeg = /usr/local/opt/ffmpeg/ffmpeg
+ffprobe = /usr/local/opt/ffmpeg/ffprobe
+```
+
+## 5. Note <a name="note"></a>
 * In MacOS ecosystem execute the following commands in a bash shell:
 ```bash
 export LC_ALL=en_US.UTF-8
