@@ -1,0 +1,5 @@
+# external libs
+./lib/python-video-converter-master
+
+# PyPI libs
+watchdog
