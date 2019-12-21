@@ -27,8 +27,8 @@ class FFmpeg(BaseConverter):
         self.__converter = Converter(ffmpeg, ffprobe)
 
     def prepare(self, media_info: MediaInfo) -> None:
-        super()._wait_file(media_info)
         super().prepare(media_info)
+        super()._wait_file(media_info)
 
     def convert(self, media_info: MediaInfo) -> None:
         """
