@@ -3,13 +3,13 @@ import sys
 from pathlib import Path
 
 
-class Validate(object):
+class Validation(object):
     """
 
     """
 
     @staticmethod
-    def not_null(val: object, msg: str = "") -> None:
+    def not_none(val: object, msg: str = "") -> None:
         if val is None:
             raise TypeError(msg)
 
@@ -49,6 +49,13 @@ class Validate(object):
             raise TypeError(msg)
 
     @staticmethod
+    def key_exists(val: dict, key: object, msg: str = "") -> None:
+        try:
+            val[key]
+        except KeyError:
+            raise KeyError(msg)
+
+    @staticmethod
     def path_exists(val: str, msg: str = "") -> None:
         if not Path(val).resolve().exists():
             raise FileNotFoundError(msg)
@@ -66,14 +73,12 @@ class Validate(object):
     @staticmethod
     def is_link(val: str, msg: str = "") -> None:
         if not Path(val).resolve().is_symlink():
-            raise Validate.Errors.LinkError(msg)
+            raise ValidationException.LinkError(msg)
 
     @staticmethod
     def are_symlinks(val1: str, val2: str, msg: str = "") -> None:
-        path1 = Path(val1)
-        path2 = Path(val2)
-        if path1.resolve() == path2.resolve():
-            raise Validate.Errors.LinksError(msg)
+        if Path(val1).resolve() == Path(val2).resolve():
+            raise ValidationException.SymLinksError(msg)
 
     @staticmethod
     def can_read(val: str, msg: str = "") -> None:
@@ -86,25 +91,63 @@ class Validate(object):
             raise PermissionError(msg)
 
     @staticmethod
+    def is_file_readable(val: str, msg: str = "") -> None:
+        Validation.is_file(val, msg)
+        Validation.can_read(val, msg)
+
+    @staticmethod
+    def is_dir_writeable(val: str, msg: str = "") -> None:
+        Validation.is_dir(val, msg)
+        Validation.can_write(val, msg)
+
+    @staticmethod
+    def is_empty(val: str, msg: str = "") -> None:
+        if val in ("", None):
+            raise ValueError(msg)
+
+    @staticmethod
+    def has_extension(val: str, msg: str = ""):
+        if '.' not in val:
+            raise ValidationException.MissingExtensionError(msg)
+
+    @staticmethod
     def python_version(min_version: tuple, msg: str = "") -> None:
         actual_version = sys.version_info
         for v in min_version:
             if actual_version[min_version.index(v)] < int(v):
-                raise Validate.Errors.PythonVersionError(msg)
+                raise ValidationException.PythonVersionError(msg)
 
-    class Errors(object):
 
-        class LinkError(Exception):
+class ValidationException(object):
 
-            def __init__(self, *args, **kwargs):
-                super().__init__(args, kwargs)
+    class BaseException(Exception):
 
-        class LinksError(Exception):
+        def __init__(self, *args, **kwargs):
+            super().__init__(args, kwargs)
 
-            def __init__(self, *args, **kwargs):
-                super().__init__(args, kwargs)
+        def __str__(self):
+            if len(self.args) == 0:
+                return ""
+            if len(self.args) == 1:
+                return str(self.args[0])
+            return str(self.args[0][0])
 
-        class PythonVersionError(Exception):
+    class LinkError(BaseException):
 
-            def __init__(self, *args, **kwargs):
-                super().__init__(args, kwargs)
+        def __init__(self, *args, **kwargs):
+            super().__init__(args, kwargs)
+
+    class SymLinksError(BaseException):
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(args, kwargs)
+
+    class PythonVersionError(BaseException):
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(args, kwargs)
+
+    class MissingExtensionError(BaseException):
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(args, kwargs)

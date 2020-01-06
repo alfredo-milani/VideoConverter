@@ -20,96 +20,117 @@ The following tools are required:
 ## 3. Installation <a name="installation"></a>
 
 ### 3.1 Optional <a name="installation-optional"></a>
-Install virtualenv package for Python:
+
 ```bash
+# Install virtualenv package for Python:
 pip install virtualenv
-```
 
-Create virtual environment named VideoConveter:
-```bash
-virtualenv VideoConverter
-```
-or:
-```bash
-virtualenv -p python3 VideoConverter
-```
+# Create virtual environment named VideoConveter:
+virtualenv VideoConveter
+# or
+virtualenv -p python3 VideoConveter
 
-Activate virtual environment:
-```bash
-source VideoConverter/bin/activate
-```
+# Activate virtual environment:
+source VideoConveter/bin/activate
 
-Deactivate virtual environment:
-```bash
+# Deactivate virtual environment:
 deactivate
 ```
 
 ### 3.2 Mandatory <a name="installation-mandatory"></a>
-Install required pip-tools for requirements installation:
+
 ```bash
+# Install required pip-tools for requirements installation:
 alias py='python -m pip'
 py install pip-tools
-```
 
-Move to root project directory:
-```bash
+# Move to root project directory:
 cd /project_root/
-```
 
-Read requirements to install:
-```bash
+# Read requirements to install:
 pip-compile --output-file requirements.txt requirements.in
-```
 
-Install requierd packages:
-```bash
+# Install required packages:
 pip-sync
 ```
 
 ## 4. Usage <a name="usage"></a>
+
+Modify file res/conf/log.ini, section 'handler_file_handler', key 'args', prefix "/var/log/Dispatcher_", to specify a valid base path for log file.
+
+```ini
+# Default:
+[handler_file_handler]
+. . .
+args = ("/var/log/Dispatcher_" + time.strftime("%%Y%%m%%d") + ".log", "a")
+```
+
 Start main:
+
 ```bash
-python src/Main.py
+python src/Application.py
 ```
 
 You could specify a configuration file:
 ```bash
-python src/Main.py /tmp/config
+python src/Application.py /path/custom_config.ini
 ```
 
-Configurations file examaple:
+Configurations file example:
 ```ini
-[general]
-# Directory per i files temporanei
-tmp = /tmp
-# Numero di processi che si occuperanno della conversione dei files
+# Legend
+#   [opt] := optional parameter
+#   [dft] := default value
+#   [mnd] := mandatory parameter
+
+
+[GENERAL]
+# [opt] - Configuration file for logging service
+# [dft] - res/conf/log.ini
+# log.config_file = /Volumes/Ramdisk/log.ini
+
+# [opt] - Directory for temporary files
+# [dft] - /tmp
+# tmp = /Volumes/Ramdisk/tmp
+
+# [opt] - Processes for conversion handling
 processes = 5
 
-[media]
-# Directory dove cercare i files da convertire
-in.folder = /tmp
-# Directory dove spostare i files originali dopo la conversione
-in.converted.folder = /tmp/VideoConverter/converted
-# Directory dove salvare i files convertiti
-out.folder = /tmp/VideoConverter/out
-# Formato dei files convertiti
+[MEDIA]
+# [mnd] - Input directory
+in.folder = /Volumes/Ramdisk/test/in
+
+# [opt] - Directory where will be moved files after conversion
+# NOTE: leave empty this parameter to delete files after conversion
+# NOTE: if this parameter will not be specified then not action will be taken
+in.converted.folder =
+# in.converted.folder = /Volumes/Ramdisk/test/converted
+
+# [opt] - Frequency (seconds) for checking new files
+# [dft] - 1
+in.timeout = 0.5
+
+# [mnd] - Directory for storing converted files
+out.folder = /Volumes/Ramdisk/test
+
+# [mnd] - Conversion format. Follow JSON format
 out.format = {
-            'format': 'avi',
-            'audio': {
-                'codec': 'mp3',
-                'samplerate': 11025,
-                'channels': 2
-            },
-            'video': {
-                'codec': 'h264',
-                'width': 720,
-                # 'height': 400,
-                # 'fps': 15
-            }
-        }
-# Frequenza (sec) per il controllo di nuovi media
-obs-timeout = 0.5
-# Path per i binari richiesti
+                'format' : 'avi',
+                'audio' : {
+                    'codec' : 'mp3',
+                    'samplerate' : 11025,
+                    'channels' : 2
+                },
+                'video' : {
+                    'codec' : 'h264',
+                    'width' : 720,
+                    # 'height' : 400,
+                    # 'fps' : 15
+                }
+             }
+
+# [opt] - Path of requested binary
+# [dft] - Binaries for ffmpeg and ffprobe will be searched in PATH environment variable
 ffmpeg = /usr/local/opt/ffmpeg/ffmpeg
 ffprobe = /usr/local/opt/ffmpeg/ffprobe
 ```

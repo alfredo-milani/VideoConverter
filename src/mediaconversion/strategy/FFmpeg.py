@@ -6,13 +6,14 @@ from converter import Converter
 
 from mediaconversion.strategy import BaseConverter
 from mediaconversion.model import MediaInfo
+from util import LogManager
 from util.Common import Common
-from util.Validation import Validate
+from util.Validation import Validation
 
 
 class FFmpeg(BaseConverter):
 
-    log = logging.getLogger(Common.MEDIA_CONVERSION_LOGGER)
+    __LOG = logging.getLogger(LogManager.Logger.CONVERTER.value)
 
     FFMPEG_BIN = "ffmpeg"
     FFPROBE_BIN = "ffprobe"
@@ -22,7 +23,7 @@ class FFmpeg(BaseConverter):
 
         if not Common.is_installed(ffmpeg) or \
                 not Common.is_installed(ffprobe):
-            raise FileNotFoundError("Wrong path for {} or {}".format(FFmpeg.FFMPEG_BIN, FFmpeg.FFPROBE_BIN))
+            raise FileNotFoundError(f"Wrong path for {FFmpeg.FFMPEG_BIN} or {FFmpeg.FFPROBE_BIN}")
 
         self.__converter = Converter(ffmpeg, ffprobe)
 
@@ -36,14 +37,16 @@ class FFmpeg(BaseConverter):
         Visit http://ffmpeg.org/ or https://ffbinaries.com/downloads to download the tool
         :param media_info: object which incapsulate infformation for strategy
         """
+        FFmpeg.__LOG.debug(f"[CONVERTING] '{media_info.filein}'")
+
         probe = self.__converter.probe(media_info.filein)
-        FFmpeg.log.debug("Probing '{}': {}".format(media_info.filein, probe))
-        Validate.not_null(
+        FFmpeg.__LOG.debug(f"[PROBING] '{media_info.filein}': {probe}")
+        Validation.not_none(
             probe,
-            "Probing failed: '{}' is not a valid media file".format(media_info.filein)
+            f"Probing failed: '{media_info.filein}' is not a valid media file"
         )
 
-        FFmpeg.log.info("Conversion started '{}'".format(media_info.filein))
+        FFmpeg.__LOG.info(f"[CONVERSION STARTED] '{media_info.filein}'")
         conversion = self.__converter.convert(
             media_info.filein,
             media_info.fileout,
@@ -53,21 +56,9 @@ class FFmpeg(BaseConverter):
         for _ in conversion:
             pass
 
-    def on_error(self, media_info: MediaInfo = None, exception: Exception = None) -> None:
-        super().on_error(media_info, exception)
-        FFmpeg.log.warning("Conversion error '{}'".format(media_info.filein))
-        FFmpeg.log.debug("Conversion error", exc_info=True)
-
-        try:
-            Validate.is_file(media_info.fileout)
-            Path(media_info.fileout).unlink()
-            FFmpeg.log.debug("Removed half parsed file '{}'".format(media_info.fileout))
-        except FileNotFoundError:
-            pass
-
     def on_success(self, media_info: MediaInfo = None) -> None:
         super().on_success(media_info)
-        FFmpeg.log.info("Conversion completed '{}'".format(media_info.filein))
+        FFmpeg.__LOG.debug(f"[CONVERSION SUCCESS] '{media_info.filein}'")
 
         filein_converted_folder = media_info.filein_converted_folder
         if filein_converted_folder is None:  # no action
@@ -81,3 +72,15 @@ class FFmpeg(BaseConverter):
             fileout_path = filein_converted_path.joinpath(filein_path.name)
 
             shutil.move(filein_path, fileout_path)
+
+    def on_error(self, media_info: MediaInfo = None, exception: Exception = None) -> None:
+        super().on_error(media_info, exception)
+        FFmpeg.__LOG.warning(f"[CONVERSION ERROR] '{media_info.filein}'")
+        FFmpeg.__LOG.debug("[CONVERSION ERROR]", exc_info=True)
+
+        try:
+            Validation.is_file(media_info.fileout)
+            Path(media_info.fileout).unlink()
+            FFmpeg.__LOG.debug(f"Removed half parsed file '{media_info.fileout}'")
+        except FileNotFoundError:
+            pass

@@ -1,3 +1,3 @@
-from model.Config import Config
+from model.ConverterConfig import ConverterConfig
 
-__all__ = ["Config"]
+__all__ = ["ConverterConfig"]

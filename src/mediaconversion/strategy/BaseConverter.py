@@ -1,5 +1,5 @@
 import time
-from abc import ABC, abstractmethod
+from abc import ABC
 from os.path import getsize
 
 from mediaconversion.model import MediaInfo
@@ -29,10 +29,6 @@ class BaseConverter(ABC, IConverter):
 
     def prepare(self, media_info: MediaInfo) -> None:
         pass
-
-    @abstractmethod
-    def convert(self, media_info: MediaInfo) -> None:
-        raise NotImplementedError
 
     def on_error(self, media_info: MediaInfo = None,
                  exception: Exception = None) -> None:

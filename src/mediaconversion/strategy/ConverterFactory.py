@@ -1,15 +1,12 @@
-import logging
 from enum import Enum, auto
 
 from mediaconversion.strategy import FFmpeg, BaseConverter
-from model import Config
-from util import Common
+from model import ConverterConfig
 
 
 class ConverterFactory(object):
 
-    log = logging.getLogger(Common.MEDIA_CONVERSION_LOGGER)
-    config = Config.get_instance()
+    _CONFIG = ConverterConfig.get_instance()
 
     class Types(Enum):
         FFMPEG = auto()
@@ -20,11 +17,11 @@ class ConverterFactory(object):
             raise ValueError
 
         if strategy == cls.Types.FFMPEG:
-            if ConverterFactory.config.ffmpeg is not None and \
-                    ConverterFactory.config.ffprobe is not None:
+            if ConverterFactory._CONFIG.media_ffmpeg is not None and \
+                    ConverterFactory._CONFIG.media_ffprobe is not None:
                 return FFmpeg(
-                    ConverterFactory.config.ffmpeg,
-                    ConverterFactory.config.ffprobe
+                    ConverterFactory._CONFIG.media_ffmpeg,
+                    ConverterFactory._CONFIG.media_ffprobe
                 )
             else:
                 return FFmpeg()

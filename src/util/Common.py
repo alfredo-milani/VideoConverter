@@ -1,9 +1,7 @@
 class Common(object):
     """
-    Logger type
+
     """
-    ROOT_LOGGER = "root"
-    MEDIA_CONVERSION_LOGGER = "mediaConversion"
 
     @staticmethod
     def is_installed(binary: str) -> bool:
