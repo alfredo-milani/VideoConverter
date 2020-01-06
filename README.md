@@ -62,7 +62,7 @@ Modify file res/conf/log.ini, section 'handler_file_handler', key 'args', prefix
 # Default:
 [handler_file_handler]
 . . .
-args = ("/var/log/Dispatcher_" + time.strftime("%%Y%%m%%d") + ".log", "a")
+args = ("/var/log/media_converter_" + time.strftime("%%Y%%m%%d") + ".log", "a")
 ```
 
 Start main:
