@@ -84,11 +84,11 @@ class MediaObserver(object):
         Validation.can_write(media_in_folder, f"Missing write permission on '{media_in_folder}'")
 
         try:
-            Validation.is_dir_writeable(media_out_folder, f"Directory '{media_out_folder}' *must* exists and be writable")
+            Validation.is_dir_writeable(media_out_folder, f"Directory '{media_out_folder}' *must* be writable")
         except NotADirectoryError:
-            parent_directory = Path(media_out_folder).parent
+            parent_directory = str(Path(media_out_folder).parent)
             Validation.can_write(parent_directory, f"Missing write permission on '{parent_directory}'")
-            MediaObserver.__LOG.info(f"Creating missing destination directory '{media_out_folder}'")
+            MediaObserver.__LOG.info(f"Creating missing destination directory for converted files '{media_out_folder}'")
             # create if not exists
             Path(media_out_folder).mkdir(parents=True, exist_ok=True)
 
@@ -100,15 +100,26 @@ class MediaObserver(object):
 
         try:
             Validation.is_empty(media_in_converted_folder)
-            Validation.is_dir_writeable(media_in_converted_folder, f"Not a directory '{media_in_converted_folder}'")
+            Validation.is_dir_writeable(media_in_converted_folder, f"Directory '{media_in_converted_folder}' *must* be writable")
+            Validation.are_symlinks(
+                media_in_folder,
+                media_in_converted_folder,
+                f"Input ('{media_in_folder}') and output ('{media_in_converted_folder}') directory can not be the same (or symlinks)"
+            )
         except ValueError:
             pass
         except NotADirectoryError:
-            parent_directory = Path(media_in_converted_folder).parent
-            Validation.can_write(media_in_converted_folder, f"Missing write permission on '{parent_directory}'")
-            MediaObserver.__LOG.info(f"Creating missing destination directory for converted files '{media_in_converted_folder}'")
+            parent_directory = str(Path(media_in_converted_folder).parent)
+            Validation.can_write(parent_directory, f"Missing write permission on '{parent_directory}'")
+            MediaObserver.__LOG.info(f"Creating missing destination directory for original files converted '{media_in_converted_folder}'")
             # create if not exists
             Path(media_in_converted_folder).mkdir(parents=True, exist_ok=True)
+
+            Validation.are_symlinks(
+                media_in_folder,
+                media_in_converted_folder,
+                f"Input ('{media_in_folder}') and output ('{media_in_converted_folder}') directory can not be the same (or symlinks)"
+            )
 
     def __observe(self) -> None:
         # Start observing directories
@@ -123,6 +134,11 @@ class MediaObserver(object):
         self.__observer.join()
 
     def start(self) -> None:
+        """
+
+        :raise: KeyboardInterrupt
+        :raise: Exception
+        """
         MediaObserver.__LOG.debug(chr(10) + MediaObserver._CONVERTER_CONFIG)
         MediaObserver.__LOG.info("*** START *** monitoring")
 

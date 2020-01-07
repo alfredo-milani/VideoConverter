@@ -36,7 +36,7 @@ class ConverterConfig(dict):
     # Keys
     K_IN_FOLDER = "in.folder"
     V_DEFAULT_IN_FOLDER = None
-    K_IN_CONVERTED_FOLDER = "in.converted.folder"
+    K_IN_CONVERTED_FOLDER = "in.converted_folder"
     V_DEFAULT_IN_CONVERTED_FOLDER = None
     K_IN_TIMEOUT = "in.timeout"
     V_DEFAULT_IN_TIMEOUT = 1

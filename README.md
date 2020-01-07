@@ -56,7 +56,7 @@ pip-sync
 
 ## 4. Usage <a name="usage"></a>
 
-Modify file res/conf/log.ini, section 'handler_file_handler', key 'args', prefix "/var/log/Dispatcher_", to specify a valid base path for log file.
+Modify file res/conf/log.ini, section 'handler_file_handler', key 'args', prefix "/var/log/media_converter_", to specify a valid base path for log file.
 
 ```ini
 # Default:
