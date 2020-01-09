@@ -40,7 +40,7 @@ class MediaObserver(object):
         self.__converter_config = converter_config
 
         # Load loggers
-        self.__init_loggers(converter_config.general_log_config_file)
+        self.__init_loggers(converter_config.log_filename)
         # Check permissions
         self.__check_permissions()
 
