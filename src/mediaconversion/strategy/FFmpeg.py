@@ -1,4 +1,3 @@
-import logging
 import shutil
 from pathlib import Path
 
@@ -7,13 +6,12 @@ from converter import Converter
 from mediaconversion.strategy import BaseConverter
 from mediaconversion.model import MediaInfo
 from util import LogManager
-from util.Common import Common
 from util.Validation import Validation
 
 
 class FFmpeg(BaseConverter):
 
-    __LOG = logging.getLogger(LogManager.Logger.CONVERTER.value)
+    __LOG = None
 
     FFMPEG_BIN = "ffmpeg"
     FFPROBE_BIN = "ffprobe"
@@ -21,10 +19,10 @@ class FFmpeg(BaseConverter):
     def __init__(self, ffmpeg: str = FFMPEG_BIN, ffprobe: str = FFPROBE_BIN):
         super().__init__()
 
-        if not Common.is_installed(ffmpeg) or \
-                not Common.is_installed(ffprobe):
-            raise FileNotFoundError(f"Wrong path for {FFmpeg.FFMPEG_BIN} or {FFmpeg.FFPROBE_BIN}")
+        Validation.is_installed(ffmpeg, f"Wrong path for {FFmpeg.FFMPEG_BIN}")
+        Validation.is_installed(ffprobe, f"Wrong path for {FFmpeg.FFPROBE_BIN}")
 
+        FFmpeg.__LOG = LogManager.get_instance().get(LogManager.Logger.CONVERTER)
         self.__converter = Converter(ffmpeg, ffprobe)
 
     def prepare(self, media_info: MediaInfo) -> None:

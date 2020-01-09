@@ -8,15 +8,15 @@ class ConverterFactory(object):
 
     _CONFIG = ConverterConfig.get_instance()
 
-    class Types(Enum):
+    class Converters(Enum):
         FFMPEG = auto()
 
     @classmethod
-    def get_type(cls, strategy: Types) -> BaseConverter:
+    def get_type(cls, strategy: Converters) -> BaseConverter:
         if strategy is None:
             raise ValueError
 
-        if strategy == cls.Types.FFMPEG:
+        if strategy == cls.Converters.FFMPEG:
             if ConverterFactory._CONFIG.media_ffmpeg is not None and \
                     ConverterFactory._CONFIG.media_ffprobe is not None:
                 return FFmpeg(

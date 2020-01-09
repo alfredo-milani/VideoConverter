@@ -1,8 +1,8 @@
-import logging.config
 from pathlib import Path
 
 from watchdog.observers import Observer
 
+import __version__
 from mediaconversion.MediaEventHandler import MediaEventHandler
 from model import ConverterConfig
 from util import LogManager
@@ -16,12 +16,10 @@ class MediaObserver(object):
     """
 
     # TODO
-    #  - programmatic logs
+    #  - add verbose and debug cli option
     #  - unit test
 
     __LOG = None
-
-    _CONVERTER_CONFIG = None
 
     PY_VERSION_MIN = (3, 7)
     OBSERVING_TIMEOUT = 1
@@ -34,12 +32,13 @@ class MediaObserver(object):
         """
         super().__init__()
 
-        MediaObserver._CONVERTER_CONFIG = converter_config
-        self.__observer = None
-        self.__event_handler = None
+        print(f"version: {__version__.__version__}")
 
         # Validate python version
-        self.__validate_py_version(MediaObserver.PY_VERSION_MIN)
+        Validation.python_version(MediaObserver.PY_VERSION_MIN, f"Python version required >= {MediaObserver.PY_VERSION_MIN}")
+
+        self.__converter_config = converter_config
+
         # Load loggers
         self.__init_loggers(converter_config.general_log_config_file)
         # Check permissions
@@ -49,22 +48,10 @@ class MediaObserver(object):
         self.__event_handler = MediaEventHandler(converter_config.general_processes)
 
     @classmethod
-    def __validate_py_version(cls, min_version):
-        Validation.python_version(
-            min_version,
-            f"Python version required >= {min_version}"
-        )
-
-    @classmethod
-    def __init_loggers(cls, log_config_file):
-        Validation.is_file_readable(
-            log_config_file,
-            f"Log configuration file *must* exists and be readable '{log_config_file}'"
-        )
-
-        # Loading log's configuration file
-        logging.config.fileConfig(fname=log_config_file)
-        MediaObserver.__LOG = logging.getLogger(LogManager.Logger.OBSERVER.value)
+    def __init_loggers(cls, log_filename: str) -> None:
+        log_manager = LogManager.get_instance()
+        log_manager.load(log_filename)
+        MediaObserver.__LOG = log_manager.get(LogManager.Logger.OBSERVER)
 
     def __check_permissions(self):
         """
@@ -75,9 +62,9 @@ class MediaObserver(object):
         :raise PermissionError
         :raise LinksError
         """
-        media_in_folder = self._CONVERTER_CONFIG.media_in_folder
-        media_out_folder = self._CONVERTER_CONFIG.media_out_folder
-        media_in_converted_folder = self._CONVERTER_CONFIG.media_in_converted_folder
+        media_in_folder = self.__converter_config.media_in_folder
+        media_out_folder = self.__converter_config.media_out_folder
+        media_in_converted_folder = self.__converter_config.media_in_converted_folder
 
         Validation.is_dir(media_in_folder, f"Missing input directory '{media_in_folder}'")
         Validation.can_read(media_in_folder, f"Missing read permission on '{media_in_folder}'")
@@ -125,11 +112,11 @@ class MediaObserver(object):
         # Start observing directories
         self.__observer.schedule(
             self.__event_handler,
-            MediaObserver._CONVERTER_CONFIG.media_in_folder,
+            self.__converter_config.media_in_folder,
             recursive=False
         )
         self.__observer.start()
-        MediaObserver.__LOG.info(f"Start observing {MediaObserver._CONVERTER_CONFIG.media_in_folder}")
+        MediaObserver.__LOG.debug(f"Start observing {self.__converter_config.media_in_folder}")
 
         self.__observer.join()
 
@@ -139,7 +126,7 @@ class MediaObserver(object):
         :raise: KeyboardInterrupt
         :raise: Exception
         """
-        MediaObserver.__LOG.debug(chr(10) + MediaObserver._CONVERTER_CONFIG)
+        MediaObserver.__LOG.debug(chr(10) + self.__converter_config)
         MediaObserver.__LOG.info("*** START *** monitoring")
 
         try:
@@ -159,17 +146,17 @@ class MediaObserver(object):
             self.__observer.unschedule_all()
             self.__observer.stop()
             self.__observer.join()
-            MediaObserver.__LOG.info(f"Stop observing {MediaObserver._CONVERTER_CONFIG.media_in_folder}")
+            MediaObserver.__LOG.debug(f"Stop observing {self.__converter_config.media_in_folder}")
         except RuntimeError as e:
             MediaObserver.__LOG.debug(f"{e}", exc_info=True)
 
         MediaObserver.__LOG.debug("Shutting down logging service")
-        logging.shutdown()
+        LogManager.get_instance().shutdown()
 
     def stop(self) -> None:
         MediaObserver.__LOG.info("*** STOP *** monitoring")
 
-        MediaObserver.__LOG.info("Cleanup")
+        MediaObserver.__LOG.debug("Cleanup")
         self.__cleanup()
 
-        MediaObserver.__LOG.info("Exit")
+        MediaObserver.__LOG.debug("Exit")

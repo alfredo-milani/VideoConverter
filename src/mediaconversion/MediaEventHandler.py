@@ -1,4 +1,3 @@
-import logging
 import signal
 from concurrent.futures.process import ProcessPoolExecutor
 from pathlib import Path
@@ -14,16 +13,19 @@ from util.Validation import Validation
 
 class MediaEventHandler(FileSystemEventHandler):
 
-    __LOG = logging.getLogger(LogManager.Logger.CONVERTER.value)
+    __LOG = None
 
     _CONFIG = ConverterConfig.get_instance()
 
     DEFAULT_MAX_PROCESSES = 2
+    DEFAULT_CONVERTER = ConverterFactory.Converters.FFMPEG
 
-    def __init__(self, max_processes: int = DEFAULT_MAX_PROCESSES):
+    def __init__(self, max_processes: int = DEFAULT_MAX_PROCESSES,
+                 converter: ConverterFactory.Converters = DEFAULT_CONVERTER):
         super().__init__()
 
-        self.__converter = ConverterFactory.get_type(ConverterFactory.Types.FFMPEG)
+        MediaEventHandler.__LOG = LogManager.get_instance().get(LogManager.Logger.OBSERVER)
+        self.__converter = ConverterFactory.get_type(converter)
         self.__executor = ProcessPoolExecutor(
             max_workers=max_processes,
             initializer=MediaEventHandler.__init_worker
