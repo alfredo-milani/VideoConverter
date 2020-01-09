@@ -90,10 +90,6 @@ class ConverterConfig(dict):
 
         :raise: SyntaxError if there is a syntax error in configuration file
         """
-        # intern
-        self.__put_str(ConverterConfig.K_APP_NAME, '', '', ConverterConfig.V_DEFAULT_APP_NAME)
-        self.__put_str(ConverterConfig.K_LOG_FILE, '', '', ConverterConfig.V_DEFAULT_LOG_FILE.format(self.app_name, date.today().strftime('%Y%m%d')))
-
         # section [GENERAL]
         self.__put_str(ConverterConfig.K_LOG_DIR, ConverterConfig.S_GENERAL, ConverterConfig.K_LOG_DIR, ConverterConfig.V_DEFAULT_LOG_DIR)
         self.__put_str(ConverterConfig.K_TMP, ConverterConfig.S_GENERAL, ConverterConfig.K_TMP, ConverterConfig.V_DEFAULT_TMP)
