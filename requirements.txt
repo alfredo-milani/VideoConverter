@@ -4,8 +4,13 @@
 #
 #    pip-compile --output-file=requirements.txt requirements.in
 #
-argh==0.26.2              # via watchdog
-pathtools==0.1.2          # via watchdog
-pyyaml==5.1.1             # via watchdog
-file:///Volumes/Data/Projects/Python/VideoConverter/lib/python-video-converter-master
+argh==0.26.2
+    # via watchdog
+pathtools==0.1.2
+    # via watchdog
+pyyaml==5.4
+    # via watchdog
+file:///home/dependabot/dependabot-updater/tmp/dependabot_20210325-9-15d98ss/lib/python-video-converter-master
+    # via -r requirements.in
 watchdog==0.9.0
+    # via -r requirements.in
